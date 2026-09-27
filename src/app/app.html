@@ -1,0 +1,235 @@
+<header class="header">
+  <a class="brand" href="#">
+    <span class="brand-mark">E</span>
+    <span>EventPass</span>
+  </a>
+
+  <nav class="navigation">
+    <a href="#events">Події</a>
+    <a href="#about">Про нас</a>
+
+    @if (loggedIn) {
+      <a
+        href="#profile"
+        (click)="$event.preventDefault(); openAccount('profile')"
+      >
+        Профіль
+      </a>
+    }
+  </nav>
+
+  @if (loggedIn) {
+    <button
+      class="login-button"
+      type="button"
+      (click)="openAccount('profile')"
+    >
+      Мій профіль <span aria-hidden="true">↗</span>
+    </button>
+  } @else {
+    <button
+      class="login-button"
+      type="button"
+      (click)="showLogin = true"
+    >
+      Увійти <span aria-hidden="true">↗</span>
+    </button>
+  }
+</header>
+
+@if (showLogin) {
+  <div class="login-overlay" (click)="showLogin = false">
+    <div class="login-dialog" (click)="$event.stopPropagation()">
+      <button
+        class="login-close"
+        type="button"
+        aria-label="Закрити"
+        (click)="showLogin = false"
+      >
+        ×
+      </button>
+
+      @if (showRegister) {
+        <app-register (registered)="onRegistered($event)" />
+
+        <button
+          class="auth-switch"
+          type="button"
+          (click)="showRegister = false"
+        >
+          Уже маєш акаунт? Увійти
+        </button>
+      } @else {
+        <app-login (loginSuccess)="onLoginSuccess($event)" />
+
+        <button
+          class="auth-switch"
+          type="button"
+          (click)="showRegister = true"
+        >
+          Ще не маєш акаунта? Зареєструватися
+        </button>
+      }
+    </div>
+  </div>
+}
+
+@if (showAccount && loggedIn && isAuthenticated()) {
+  <app-account
+    [initialTab]="accountTab"
+    (close)="showAccount = false"
+    (logout)="logout()"
+  />
+}
+
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">ТВОЇ ВРАЖЕННЯ ПОЧИНАЮТЬСЯ ТУТ</p>
+      <h1>Знайди подію.<br /><span>Відчуй момент.</span></h1>
+      <p class="hero-description">
+        Концерти, мистецтво й незабутні зустрічі — обирай, що надихає саме тебе.
+      </p>
+      <a class="primary-button" href="#events">
+        Переглянути події <span>→</span>
+      </a>
+    </div>
+
+    <div class="hero-image">
+      <img
+        src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=85"
+        alt="Глядачі на концерті"
+      />
+      <div class="image-caption">ТВІЙ НАСТУПНИЙ ЯСКРАВИЙ ВЕЧІР</div>
+    </div>
+  </section>
+
+  <section class="events-section" id="events">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">ОБИРАЙ СВОЄ</p>
+        <h2>Популярні події</h2>
+      </div>
+
+      <span class="event-count">{{ filteredEvents.length }} події</span>
+    </div>
+
+    <label class="search">
+      <span aria-hidden="true">⌕</span>
+      <input
+        type="search"
+        placeholder="Знайти подію, категорію або місце"
+        [value]="searchText"
+        (input)="searchText = $any($event.target).value"
+      />
+    </label>
+
+    @if (filteredEvents.length > 0) {
+      <div class="event-grid">
+        @for (event of filteredEvents; track event.id) {
+          <article class="event-card">
+            <img [src]="event.image" [alt]="event.title" />
+
+            <div class="event-info">
+              <span class="category">{{ event.category }}</span>
+              <h3>{{ event.title }}</h3>
+              <p class="event-meta">{{ event.date }}</p>
+              <p class="event-meta">{{ event.venue }}</p>
+
+              <div class="event-bottom">
+                <p class="price">
+                  {{ event.price }} ₴ <span>/ квиток</span>
+                </p>
+
+                <button type="button" (click)="openBooking(event)">
+                  Квитки <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <p class="empty-state">Подій за таким запитом не знайдено.</p>
+    }
+  </section>
+
+  <section class="about-section" id="about">
+    <p class="eyebrow">EVENTPASS — БЛИЖЧЕ ДО ВРАЖЕНЬ</p>
+    <h2>Плануй вечори,<br />які запам’ятаються.</h2>
+  </section>
+</main>
+
+<footer class="footer">
+  <a class="brand" href="#">
+    <span class="brand-mark">E</span>
+    <span>EventPass</span>
+  </a>
+
+  <span>Зустрінемось на події.</span>
+</footer>
+
+@if (selectedEvent) {
+  <div class="modal-backdrop" (click)="closeBooking()">
+    <section
+      class="booking-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-title"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        class="close-button"
+        type="button"
+        aria-label="Закрити"
+        (click)="closeBooking()"
+      >
+        ×
+      </button>
+
+      <p class="eyebrow">БРОНЮВАННЯ КВИТКІВ</p>
+      <h2 id="booking-title">{{ selectedEvent.title }}</h2>
+      <p class="modal-venue">
+        {{ selectedEvent.date }} · {{ selectedEvent.venue }}
+      </p>
+
+      <label class="form-field">
+        Дата бронювання
+        <input
+          type="date"
+          [value]="bookingDate"
+          (input)="bookingDate = $any($event.target).value"
+        />
+      </label>
+
+      <label class="form-field">
+        Кількість квитків
+        <input
+          type="number"
+          min="1"
+          max="10"
+          [value]="ticketCount"
+          (input)="ticketCount = +$any($event.target).value"
+        />
+      </label>
+
+      <div class="total">
+        <span>Разом</span>
+        <strong>{{ selectedEvent.price * ticketCount }} ₴</strong>
+      </div>
+
+      <button
+        class="primary-button submit-button"
+        type="button"
+        [disabled]="!bookingDate || ticketCount < 1"
+        (click)="confirmBooking()"
+      >
+        Підтвердити бронювання
+      </button>
+    </section>
+  </div>
+}
+
+@if (message) {
+  <div class="toast" role="status">{{ message }}</div>
+}

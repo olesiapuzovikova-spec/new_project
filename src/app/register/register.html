@@ -1,0 +1,74 @@
+<section class="register-card">
+  <p class="eyebrow">EVENTPASS</p>
+  <h1>Створи акаунт</h1>
+  <p class="subtitle">Зареєструйся, щоб бронювати квитки.</p>
+
+  <form (submit)="submit($event)">
+    <label>
+      Ім’я користувача
+      <input
+        type="text"
+        autocomplete="username"
+        [value]="username"
+        (input)="username = $any($event.target).value"
+        required
+      />
+    </label>
+
+    <label>
+      Ім’я
+      <input
+        type="text"
+        autocomplete="given-name"
+        [value]="firstName"
+        (input)="firstName = $any($event.target).value"
+        required
+      />
+    </label>
+
+    <label>
+      Прізвище
+      <input
+        type="text"
+        autocomplete="family-name"
+        [value]="lastName"
+        (input)="lastName = $any($event.target).value"
+        required
+      />
+    </label>
+
+    <label>
+      Email
+      <input
+        type="email"
+        autocomplete="email"
+        [value]="email"
+        (input)="email = $any($event.target).value"
+        required
+      />
+    </label>
+
+    <label>
+      Пароль
+      <input
+        type="password"
+        autocomplete="new-password"
+        [value]="password"
+        (input)="password = $any($event.target).value"
+        required
+      />
+    </label>
+
+    @if (error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+
+    @if (success) {
+      <p class="success" role="status">{{ success }}</p>
+    }
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Створюємо акаунт…' : 'Зареєструватися' }}
+    </button>
+  </form>
+</section>

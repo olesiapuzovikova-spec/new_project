@@ -1,0 +1,41 @@
+<section class="login-card">
+  <p class="eyebrow">EVENTPASS</p>
+  <h1>З поверненням!</h1>
+  <p class="subtitle">Увійди, щоб продовжити до своїх подій.</p>
+
+  <form (submit)="submit($event)">
+    <label>
+      Email
+      <input
+        type="email"
+        name="email"
+        autocomplete="email"
+        placeholder="name@example.com"
+        [value]="email"
+        (input)="email = $any($event.target).value"
+        required
+      />
+    </label>
+
+    <label>
+      Пароль
+      <input
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        placeholder="Введи пароль"
+        [value]="password"
+        (input)="password = $any($event.target).value"
+        required
+      />
+    </label>
+
+    @if (error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Входимо…' : 'Увійти' }}
+    </button>
+  </form>
+</section>

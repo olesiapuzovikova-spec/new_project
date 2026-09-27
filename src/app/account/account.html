@@ -1,0 +1,224 @@
+<div class="account-backdrop" (click)="close.emit()">
+  <section
+    class="account-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="account-title"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      class="account-close"
+      type="button"
+      aria-label="Закрити профіль"
+      (click)="close.emit()"
+    >
+      ×
+    </button>
+
+    <p class="account-brand">EVENTPASS</p>
+    <h1 id="account-title">Особистий кабінет</h1>
+
+    <button class="logout-button" type="button" (click)="logout.emit()">
+      Вийти з акаунта
+    </button>
+
+    <nav class="account-tabs" aria-label="Розділи кабінету">
+      <button
+        type="button"
+        [class.active]="activeTab === 'profile'"
+        (click)="activeTab = 'profile'"
+      >
+        Мій профіль
+      </button>
+
+      <button
+        type="button"
+        [class.active]="activeTab === 'bookings'"
+        (click)="activeTab = 'bookings'"
+      >
+        Мої бронювання
+      </button>
+    </nav>
+
+    @if (activeTab === 'profile') {
+      <section class="account-content">
+        @if (profileLoading) {
+          <p class="status-card">Завантажую профіль…</p>
+        } @else if (profileError && !profile) {
+          <p class="status-card error-message">{{ profileError }}</p>
+          <button class="secondary-button" type="button" (click)="loadProfile()">
+            Спробувати ще раз
+          </button>
+        } @else if (profile) {
+          @if (!isEditing) {
+            <div class="profile-summary">
+              <div class="avatar-placeholder" aria-hidden="true">
+                {{ value('firstName', 'userName', 'username').slice(0, 1) || 'E' }}
+              </div>
+
+              <div>
+                <h2>
+                  {{ value('firstName', 'userName', 'username') }}
+                  {{ value('lastName') !== '—' ? value('lastName') : '' }}
+                </h2>
+                <p>{{ value('email') }}</p>
+              </div>
+            </div>
+
+            <div class="profile-grid">
+              <article class="profile-field">
+                <span>Ім’я користувача</span>
+                <strong>{{ value('userName', 'username') }}</strong>
+              </article>
+
+              <article class="profile-field">
+                <span>Ім’я</span>
+                <strong>{{ value('firstName', 'first_name') }}</strong>
+              </article>
+
+              <article class="profile-field">
+                <span>Прізвище</span>
+                <strong>{{ value('lastName', 'last_name') }}</strong>
+              </article>
+
+              <article class="profile-field">
+                <span>Email</span>
+                <strong>{{ value('email') }}</strong>
+              </article>
+
+              <article class="profile-field">
+                <span>Країна</span>
+                <strong>{{ value('country') }}</strong>
+              </article>
+
+              <article class="profile-field">
+                <span>Дата народження</span>
+                <strong>{{ displayDate('birthDate', 'dateOfBirth') }}</strong>
+              </article>
+
+              <article class="profile-field about-field">
+                <span>Про себе</span>
+                <strong>{{ value('aboutMe', 'about') }}</strong>
+              </article>
+            </div>
+
+            @if (saveMessage) {
+              <p class="status-message success-message">{{ saveMessage }}</p>
+            }
+
+            <button class="primary-button" type="button" (click)="startEditing()">
+              Редагувати профіль
+            </button>
+          } @else {
+            <form class="profile-form" (ngSubmit)="saveProfile()">
+              <label>
+                Ім’я користувача
+                <input
+                  type="text"
+                  name="userName"
+                  [(ngModel)]="editForm.userName"
+                  required
+                  maxlength="50"
+                />
+              </label>
+
+              <label>
+                Країна
+                <input
+                  type="text"
+                  name="country"
+                  [(ngModel)]="editForm.country"
+                  maxlength="80"
+                />
+              </label>
+
+              <label>
+                Дата народження
+                <input
+                  type="date"
+                  name="birthDate"
+                  [(ngModel)]="editForm.birthDate"
+                />
+              </label>
+
+              <label>
+                Про себе
+                <textarea
+                  name="aboutMe"
+                  [(ngModel)]="editForm.aboutMe"
+                  rows="4"
+                  maxlength="500"
+                  placeholder="Кілька слів про себе"
+                ></textarea>
+              </label>
+
+              @if (saveError) {
+                <p class="status-message error-message">{{ saveError }}</p>
+              }
+
+              <div class="form-actions">
+                <button
+                  class="primary-button"
+                  type="submit"
+                  [disabled]="savingProfile || !editForm.userName.trim()"
+                >
+                  {{ savingProfile ? 'Зберігаю…' : 'Зберегти зміни' }}
+                </button>
+
+                <button
+                  class="secondary-button"
+                  type="button"
+                  [disabled]="savingProfile"
+                  (click)="cancelEditing()"
+                >
+                  Скасувати
+                </button>
+              </div>
+            </form>
+          }
+        }
+      </section>
+    } @else {
+      <section class="account-content">
+        <div class="bookings-heading">
+          <div>
+            <p class="section-kicker">ТВОЇ ПОДІЇ</p>
+            <h2>Мої бронювання</h2>
+          </div>
+          <span class="booking-count">{{ bookings.length }}</span>
+        </div>
+
+        @if (bookingsLoading) {
+          <p class="status-card">Завантажую бронювання…</p>
+        } @else if (bookingsError) {
+          <p class="status-card error-message">{{ bookingsError }}</p>
+          <button
+            class="secondary-button"
+            type="button"
+            (click)="loadBookings()"
+          >
+            Спробувати ще раз
+          </button>
+        } @else if (bookings.length === 0) {
+          <p class="status-card">
+            Поки що бронювань немає. Обери подію, щоб забронювати квитки.
+          </p>
+        } @else {
+          <div class="booking-list">
+            @for (booking of bookings; track booking.id) {
+              <article class="booking-card">
+                <div class="booking-icon" aria-hidden="true">E</div>
+                <div class="booking-info">
+                  <h3>{{ booking.title }}</h3>
+                  <p>{{ booking.date }}</p>
+                  <p>{{ booking.venue }}</p>
+                </div>
+                <span class="booking-quantity">{{ booking.quantity }} кв.</span>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  </section>
+</div>

@@ -1,0 +1,90 @@
+<section class="events-page">
+  <div class="heading">
+    <div>
+      <p class="eyebrow">ОБИРАЙ СВОЄ</p>
+      <h1>Популярні події</h1>
+      <p class="subtitle">
+        Знаходь концерти, виставки та інші події.
+      </p>
+    </div>
+
+    <span class="event-count">{{ filteredEvents.length }} подій</span>
+  </div>
+
+  <label class="search">
+    <span aria-hidden="true">⌕</span>
+    <input
+      type="search"
+      placeholder="Пошук за назвою, категорією або місцем"
+      [value]="searchText"
+      (input)="searchText = $any($event.target).value"
+    />
+  </label>
+
+  @if (errorMessage) {
+    <p class="notice">{{ errorMessage }}</p>
+  }
+
+  @if (loading) {
+    <p class="status">Завантажуємо події…</p>
+  } @else if (filteredEvents.length === 0) {
+    <p class="status">Подій за таким запитом не знайдено.</p>
+  } @else {
+    <div class="event-grid">
+      @for (event of filteredEvents; track event.id) {
+        <article class="event-card">
+          <img [src]="event.image" [alt]="event.title" />
+
+          <div class="event-info">
+            <span class="category">{{ event.category }}</span>
+            <h2>{{ event.title }}</h2>
+            <p class="meta">{{ event.date }}</p>
+            <p class="meta">{{ event.location }}</p>
+
+            <div class="card-bottom">
+              <p class="price">
+                {{ event.price }} ₴ <span>/ квиток</span>
+              </p>
+
+              <button type="button" (click)="openDetails(event)">
+                Деталі <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
+
+@if (selectedEvent) {
+  <div class="backdrop" (click)="closeDetails()">
+    <section
+      class="details-modal"
+      role="dialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        class="close-button"
+        type="button"
+        aria-label="Закрити"
+        (click)="closeDetails()"
+      >
+        ×
+      </button>
+
+      <img [src]="selectedEvent.image" [alt]="selectedEvent.title" />
+
+      <p class="eyebrow">{{ selectedEvent.category }}</p>
+      <h2>{{ selectedEvent.title }}</h2>
+      <p>{{ selectedEvent.description }}</p>
+      <p class="meta">{{ selectedEvent.date }} · {{ selectedEvent.location }}</p>
+      <p class="price">{{ selectedEvent.price }} ₴ <span>/ квиток</span></p>
+
+      <button class="book-button" type="button" (click)="closeDetails()">
+        До бронювання — наступний крок
+      </button>
+    </section>
+  </div>
+}
